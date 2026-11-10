@@ -1,6 +1,7 @@
 import { userDAO } from "../daos/_setup";
 import { IUserSecureInfo, UserSecureInfo } from "../models/user_secure_info";
 import { ErrorResult, ServiceResponse, ServiceResponseAsync, SuccessResult } from "./services_types";
+import { verifyPassword } from "./password_utils";
 import jwt from "jsonwebtoken";
 
 export class AuthService 
@@ -14,7 +15,7 @@ export class AuthService
             return ErrorResult(400, "'password' field is required");
 
         const user = await userDAO.getByEmail(email);
-        if(!user || user.password !== password)
+        if(!user || !(await verifyPassword(password, user.password)))
             return ErrorResult(400, "Invalid user/password");
 
         return { 

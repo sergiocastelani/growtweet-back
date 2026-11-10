@@ -2,6 +2,7 @@ import { userDAO } from "../daos/_setup";
 import { UserUpdateRequest } from "../models/requests/user_update_request";
 import { IUser, User } from "../models/user";
 import { ErrorResult, ServiceResponseAsync, SuccessResult } from "./services_types";
+import { hashPassword, verifyPassword } from "./password_utils";
 
 export class UserService 
 {
@@ -20,13 +21,20 @@ export class UserService
         if (! validationResult.success)
             return validationResult;
 
-        const newUser = await userDAO.insert(user);
+        const newUser = await userDAO.insert({
+            ...user,
+            password: await hashPassword(user.password)
+        });
 
         return SuccessResult("User created", newUser);
     }
 
-    public async update(user: IUser, updateRequest: UserUpdateRequest) : ServiceResponseAsync<IUser>
+    public async update(userId: number, updateRequest: UserUpdateRequest) : ServiceResponseAsync<IUser>
     {
+        const user = await userDAO.getById(userId);
+        if (user === null)
+            return ErrorResult(404, "User not found");
+
         const validationResult = await this.validateUpdateRequest(user, updateRequest);
         if (! validationResult.success)
             return validationResult;
@@ -36,7 +44,9 @@ export class UserService
             updateRequest.username, 
             updateRequest.email, 
             updateRequest.name, 
-            updateRequest.newPassword ?? user.password, 
+            updateRequest.newPassword !== undefined
+                ? await hashPassword(updateRequest.newPassword)
+                : user.password, 
             updateRequest.pictureUrl ?? null
         );
             
@@ -87,7 +97,7 @@ export class UserService
         if (!updateRequest.currentPassword)
             return ErrorResult(400, "'Current password' field must be informed");
 
-        if (updateRequest.currentPassword !== user.password)
+        if (!(await verifyPassword(updateRequest.currentPassword, user.password)))
             return ErrorResult(400, "Wrong password");
 
         if (updateRequest.newPassword !== undefined && updateRequest.newPassword.length < 4)

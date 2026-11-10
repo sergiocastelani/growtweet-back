@@ -31,7 +31,7 @@ Layered: **controllers → services → DAOs → Prisma**.
 
 - JWT signed with `JWT_PASSWORD`, 1-day expiry, read from the header named by `AUTH_TOKEN_NAME` (an optional `Bearer ` prefix is stripped in `authMiddleware`).
 - `authMiddleware` requires a valid token and puts the user in `res.locals.user`; `loggedUserMiddleware` sets it only if a valid token is present (used by listing endpoints to compute the `liked` flag).
-- Passwords are currently compared/stored in plain text (`AuthService.login`).
+- Passwords are stored as bcrypt hashes (`bcryptjs`, via `src/services/password_utils.ts`). `UserService` hashes on create/update; `AuthService.login` and the update's `currentPassword` check verify against the hash. Never return `User` (with `password`) from a controller — map to `UserSecureInfo`.
 
 ### Data model
 

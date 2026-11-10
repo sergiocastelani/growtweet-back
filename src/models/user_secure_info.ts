@@ -1,4 +1,6 @@
-export interface IUserSecureInfo 
+import { IUser } from "./user";
+
+export interface IUserSecureInfo
 {
     id: number;
     username: string;
@@ -16,5 +18,10 @@ export class UserSecureInfo implements IUserSecureInfo {
         public pictureUrl: string | null,
     )
     {}
+
+    static FromUser(user: IUser)
+    {
+        return new UserSecureInfo(user.id, user.username, user.email, user.name, user.pictureUrl);
+    }
 }
 

@@ -2,6 +2,7 @@ import { AuthService } from "../../src/services/auth_service";
 import { userDAO } from "../../src/daos/_setup";
 import { User } from "../../src/models/user";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 import { UserSecureInfo } from "../../src/models/user_secure_info";
 
 jest.mock('../../src/daos/_setup');
@@ -56,7 +57,7 @@ describe('Test for AuthService class', () =>
             'username', 
             'email@gmail.com', 
             'name', 
-            'password-1234', 
+            bcrypt.hashSync('password-1234', 4), 
             'pictureUrl'
         ));
 
@@ -76,7 +77,7 @@ describe('Test for AuthService class', () =>
             'username', 
             'email@gmail.com', 
             'name', 
-            'password-1234', 
+            bcrypt.hashSync('password-1234', 4), 
             'pictureUrl'
         ));
 

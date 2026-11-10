@@ -4,6 +4,7 @@ import { IUser, User } from "../../src/models/user";
 import { ErrorResult, SuccessResult } from "../../src/services/services_types";
 import { UserUpdateRequest } from "../../src/models/requests/user_update_request";
 import { UserDisplay } from "../../src/models/user_display";
+import bcrypt from "bcryptjs";
 
 jest.mock('../../src/daos/_setup');
 const userDAOMock = userDAO as jest.Mocked<typeof userDAO>;
@@ -17,10 +18,12 @@ const createTestUser = (): IUser =>
         "username",
         "email",
         "name",
-        "password",
+        bcrypt.hashSync("password", 4),
         "pictureUrl"
     );
 }
+
+const testUserPlainPassword = "password";
 
 const createUpdateRequest = () => ({
     username: "username_changed",
@@ -93,10 +96,13 @@ describe('Test for UserService class', () =>
         jest.spyOn(sut, 'validateNewUser').mockResolvedValue(SuccessResult("Ok"));
         userDAOMock.insert.mockImplementation(async (user: IUser) => user);
 
-        const result = await sut.create(createTestUser());
+        const result = await sut.create({...createTestUser(), password: testUserPlainPassword});
 
         expect(sut.validateNewUser).toHaveBeenCalled();
         expect(userDAOMock.insert).toHaveBeenCalled();
+        const insertedUser = userDAOMock.insert.mock.calls[0][0];
+        expect(insertedUser.password).not.toBe(testUserPlainPassword);
+        expect(bcrypt.compareSync(testUserPlainPassword, insertedUser.password)).toBe(true);
         expect(result).toHaveProperty('success', true);
         expect(result).toHaveProperty('statusCode', 200);
         expect(result).toHaveProperty('message', "User created");
@@ -110,8 +116,9 @@ describe('Test for UserService class', () =>
         jest.spyOn(sut, 'validateUpdateRequest').mockResolvedValue(ErrorResult(400, "Bad input"));
 
         const testUser = createTestUser();
+        userDAOMock.getById.mockResolvedValue(testUser);
         const updateRequest = createUpdateRequest();
-        const result = await sut.update(testUser, updateRequest);
+        const result = await sut.update(testUser.id, updateRequest);
 
         expect(sut.validateUpdateRequest).toHaveBeenCalled();
         expect(result).toHaveProperty('success', false);
@@ -125,10 +132,11 @@ describe('Test for UserService class', () =>
         const sut = new UserService();
         const testUser = createTestUser();
         const updateRequest = createUpdateRequest();
+        userDAOMock.getById.mockResolvedValue(testUser);
         userDAOMock.update.mockImplementation(async (user: IUser) => user);
         jest.spyOn(sut, 'validateUpdateRequest').mockResolvedValue(SuccessResult("Ok"));
 
-        const result = await sut.update(testUser, updateRequest);
+        const result = await sut.update(testUser.id, updateRequest);
 
         expect(sut.validateUpdateRequest).toHaveBeenCalled();
         expect(userDAOMock.update).toHaveBeenCalled();
@@ -141,7 +149,35 @@ describe('Test for UserService class', () =>
         expect(result.data?.name).toBe(updateRequest.name);
         expect(result.data?.username).toBe(updateRequest.username);
         expect(result.data?.pictureUrl).toBe(updateRequest.pictureUrl);
-        expect(result.data?.password).toBe(updateRequest.newPassword);
+        expect(result.data?.password).not.toBe(updateRequest.newPassword);
+        expect(bcrypt.compareSync(updateRequest.newPassword, result.data!.password)).toBe(true);
+    });
+
+    test('update() must keep stored password hash when no new password is sent', async () => 
+    {
+        const sut = new UserService();
+        const testUser = createTestUser();
+        const { newPassword, ...updateRequest } = createUpdateRequest();
+        userDAOMock.getById.mockResolvedValue(testUser);
+        userDAOMock.update.mockImplementation(async (user: IUser) => user);
+        jest.spyOn(sut, 'validateUpdateRequest').mockResolvedValue(SuccessResult("Ok"));
+
+        const result = await sut.update(testUser.id, updateRequest);
+
+        expect(result).toHaveProperty('success', true);
+        expect(result.data?.password).toBe(testUser.password);
+    });
+
+    test('update() must fail on inexistent user ID', async () => 
+    {
+        const sut = new UserService();
+        userDAOMock.getById.mockResolvedValue(null);
+
+        const result = await sut.update(1, createUpdateRequest());
+
+        expect(result).toHaveProperty('success', false);
+        expect(result).toHaveProperty('statusCode', 404);
+        expect(result).toHaveProperty('message', "User not found");
     });
 
     test('validateNewUser() must succeed', async () => 

@@ -2,6 +2,7 @@ import request from "supertest";
 import { createApp } from "../../src/create_server";
 import { IUser, User } from "../../src/models/user";
 import { prismaMock } from "../config/prisma.mock";
+import bcrypt from "bcryptjs";
 
 const createTestUser = (): IUser => 
 {
@@ -10,7 +11,7 @@ const createTestUser = (): IUser =>
         "username",
         "email",
         "name",
-        "password",
+        bcrypt.hashSync("password", 4),
         "pictureUrl"
     );
 }

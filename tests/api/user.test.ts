@@ -28,7 +28,9 @@ describe('User endpoints', () =>
         expect(result.body).toHaveProperty("success");
         expect(result.body.success).toEqual(true);
         expect(result.body).toHaveProperty("data");
-        expect(result.body.data).toEqual(testUser);
+        const { password, ...publicUser } = testUser;
+        expect(result.body.data).toEqual(publicUser);
+        expect(result.body.data).not.toHaveProperty("password");
     });
 
     test("/user/:id must fail on inexistent user", async () => {

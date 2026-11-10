@@ -15,7 +15,11 @@ user_controller.get('/user/:id', async (req, res) =>
 {
     processAndRespond(res, async () => 
     {
-        return await (new UserService()).getById(parseInt(req.params.id))
+        const userResult = await (new UserService()).getById(parseInt(req.params.id));
+        if (!userResult.success)
+            return userResult;
+
+        return SuccessResult(userResult.message, UserSecureInfo.FromUser(userResult.data!));
     });
 })
 
@@ -45,9 +49,9 @@ user_controller.put('/user', authMiddleware, (req, res) =>
     processAndRespond(res, async () => 
     {
         const newUserData : UserUpdateRequest = req.body;
-        const user = res.locals.user;
+        const user : UserSecureInfo = res.locals.user;
  
-        const updateResult = await new UserService().update(user, newUserData);
+        const updateResult = await new UserService().update(user.id, newUserData);
 
         if (!updateResult.success)
             throw new ApiError(updateResult.statusCode, updateResult.message);
