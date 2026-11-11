@@ -131,6 +131,37 @@
 					}
 				}
 			}
+		},
+		"/visits": {
+			"post": {
+				"description": "Count one visit for the current UTC day (server clock). Creates the day row with count 1 if it does not exist.",
+				"tags": ["Visits"],
+				"security": [],
+				"parameters": [],
+				"responses": {
+					"201": {
+						"description": "The visit was counted; returns the day row after the increment",
+						"content": {
+							"application/json": {
+								"schema": {
+									"allOf": [
+										{"$ref": "#/components/schemas/defaultResponse"},
+										{ "properties": { "data": { "$ref": "#/components/schemas/DailyVisit" } } }
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Unknown server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/defaultResponse" }
+							}
+						}
+					}
+				}
+			}
 		}
 	},
 	"components": {
@@ -167,6 +198,14 @@
 						"nullable": true
 					}
 				}
+			},
+			"DailyVisit": {
+				"description": "Visit count of one UTC day",
+				"type": "object",
+				"properties": {
+					"date": { "description": "UTC calendar day (YYYY-MM-DD)", "type": "string", "format": "date", "example": "2026-11-11" },
+					"count": { "description": "Number of visits counted that day", "type": "integer", "example": 1 }
+				}
 			}
 		},
 		"securitySchemes": {
@@ -185,6 +224,10 @@
 		{
 			"name": "Likes",
 			"description": "Endpoints related to Like"
+		},
+		{
+			"name": "Visits",
+			"description": "Endpoints related to the visitor counter"
 		}
 	],
 	"security": [
