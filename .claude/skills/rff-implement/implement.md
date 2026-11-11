@@ -43,6 +43,11 @@ Your documentation context is limited to these files. Do not open any other rff 
 
 If something fails, fix the code, not the test. Repeat until everything passes.
 
+5. **Clean up processes before every report.** Everything you start (servers, watchers, static servers, browser tabs, scripts) must be stopped before you report, in every round.
+   - Prefer in-process checks (e.g. supertest against the app) over a live server. When you need a server, run the plain one-shot entry point (e.g. `node`/`ts-node` on the entry file), never a watcher or auto-restart script (`npm run dev`, `nodemon`, `ts-node-dev --respawn`, `--watch`): killing a watcher's child leaves the watcher alive.
+   - Start each server as a background task of your own and stop it by stopping **that task** (TaskStop), not by killing a child PID.
+   - Then verify: no process is listening on the ports you used, and no process you started is still running (list them, e.g. by command line and start time). Report the evidence. Never write "stopped" without having checked.
+
 ## 4. Report
 
 Report back in this shape (short, no file dump):
@@ -51,6 +56,7 @@ Report back in this shape (short, no file dump):
 - **Files changed:** path and one line each
 - **Deviations:** for each one: what the step file suggested, what you did instead, and why (or "none")
 - **Test results:** one line per defined test or check: id or short name, `pass` / `fail` / `needs-human`, and the evidence (command output, observed value, screenshot description). Then one line for the regression checks of existing behavior.
+- **Processes left running:** `none`, with the check you ran (ports, process list), or each process still running and why you could not stop it
 - **Blocked reason:** when `blocked`: what blocks the step, the evidence (file and quote), and a suggested way out (suggestion only)
 
 ## 5. Later rounds

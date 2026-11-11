@@ -6,6 +6,8 @@ You are reviewing the implementation of **one** step file, `<feature-dir>/step-N
 
 Review only: do not edit, stage, commit, stash or reset anything. You may run tests, scripts, servers and browser tools.
 
+**Clean up before every report.** Prefer in-process checks over a live server. When you need a server, run the plain one-shot entry point, never a watcher or auto-restart script (`npm run dev`, `nodemon`, `ts-node-dev --respawn`, `--watch`). Start it as a background task of your own and stop it by stopping that task (TaskStop), not by killing a child PID. Before reporting, verify that no port you used is still listening and no process you started is still running, and report the evidence.
+
 ## 1. Read
 
 Your documentation context is limited to these files. Do not open any other rff file, in `<feature-dir>/` or in any other folder under `.rff/`: not `<feature-dir>/plan.md`, not the source feature request, not the step files of other steps (done or not). Anything the step file does not mention is already well-established behavior: your job is to confirm the diff preserves it, not to re-verify earlier steps.
@@ -49,6 +51,7 @@ Report back in this shape (short, no file dump):
 - **Regression checks run:** one line each: what you ran or inspected, and the result
 - **Step tests run:** one line per defined test or check: `pass` / `fail` / `needs-human`, with your own evidence
 - **Findings:** for each one: the check number, file and line (or test id), what is wrong, the evidence, and the exact fix expected (or "none")
+- **Processes left running:** `none`, with the check you ran, or each process still running and why
 - **Blockers:** for each one: what it is, the evidence (file and quote), and a suggested way out (suggestion only) (or "none")
 
 ## 5. Re-reviews

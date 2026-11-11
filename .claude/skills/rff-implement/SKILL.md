@@ -61,6 +61,8 @@ Deviations from a step file's implementation suggestions, as reported by its imp
 - (S01) <check name>: <exact steps from the step file> — pending | pass | fail
 ```
 
+**Process baseline.** Before the first step of this run, record which processes already run from this project (command lines containing the project path) and which ports the project uses are already listening, so leftovers can be found at each step's close (section 3.3). Processes in the baseline belong to the user: never stop them.
+
 **Checkpoints.** The reviewer must see exactly what the current step changed. Before the first step of this run, if the working tree has uncommitted changes, show `git status --short` to the user and ask how to proceed (commit them, keep them as part of the baseline, or stop). Then ask once per run, with `AskUserQuestion`, how to checkpoint each finished step:
 
 - **Commit each step** (recommended): after a step passes, commit all its changes with the message `feat(rff): <step id> - <step title>`.
@@ -113,6 +115,9 @@ Act on the verdict:
 
 ### 3.3 Close the step
 
+0. **No leftover processes.** Before anything else, make sure neither agent of this step left anything running. Do not rely on their reports alone:
+   - If a task notification for either agent says it is still waiting on its own background work, or a report's **Processes left running** is not `none`, stop that agent's task with `TaskStop` (this ends the background tasks it started), and wait for the notification that it finished with no background work.
+   - Then compare the processes against the baseline taken at the start of the run (section 2): any new process whose command line points to this project (dev servers, watchers, test runners), or any new listener on the project's ports, is a leftover. If one remains, ask the agent that started it to stop it. If it still remains, tell the user and give them the exact command to stop it. Do not close the step while leftovers you know of remain.
 1. If the implementer listed checks as `needs-human` (checks no agent tool could run, for example a visual judgment), and the reviewer did not reject that classification, **do not ask the user to run them now**. Record each one in the log under "Checks pending for the user", with the exact steps from the step file and status `pending`. The user verifies them only after all steps are implemented (section 4).
 2. Checkpoint the step (commit or stage, as chosen in section 2).
 3. Update the log: status `done`, the number of review rounds, the checkpoint, and the accepted deviations.
@@ -151,5 +156,6 @@ When every selected step is `done` or `skipped`, or the run was stopped:
 - The step file's tests and checks are the bar: a step is done only when they all exist and pass (agent-verified; `needs-human` checks are deferred to the end of the run), and existing behavior the step does not mention is unchanged.
 - Never stop the step loop to ask the user for manual tests. The only manual-test request of a run comes in section 4, after every step is implemented.
 - Keep both agents' context minimal: the step file, global project instructions (`CLAUDE.md` and similar), the workflow control files (`implement.md` / `review.md`, `<feature-dir>/design-contract.md`) and the log (`<feature-dir>/implementation-log.md`), plus the code itself. Never brief them with the plan or other step files.
+- No step closes with leftover processes: every server, watcher or script an agent started must be stopped and verified gone (section 3.3, step 0).
 - Forward findings and user feedback faithfully; do not reinterpret them.
 - Write in the same language as the step files.
