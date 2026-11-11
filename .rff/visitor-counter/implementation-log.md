@@ -5,7 +5,7 @@
 | Step | File | Status | Rounds | Checkpoint | Notes |
 |------|------|--------|--------|-----------|-------|
 | S01 | [step-01.md](step-01.md) | done | 1 | 79359de | passed first review; concurrency check needs `connection_limit` in DATABASE_URL on Aiven dev DB |
-| S02 | [step-02.md](step-02.md) | in-progress | 0 | - | - |
+| S02 | [step-02.md](step-02.md) | done | 1 | f4b963a | passed first review; 3 live-DB checks deferred to user |
 | S03 | [step-03.md](step-03.md) | pending | 0 | - | - |
 | S04 | [step-04.md](step-04.md) | pending | 0 | - | - |
 | S05 | [step-05.md](step-05.md) | pending | 0 | - | - |
@@ -15,6 +15,10 @@ Status: pending | in-progress | done | skipped | blocked
 ## Deviations
 Deviations from a step file's implementation suggestions, as reported by its implementer and accepted by its reviewer.
 - (S01) None in design. Added a comment in `VisitDAO_Prisma.increment` that the upsert must stay plain; `migration.sql` kept with LF as Prisma generated it.
+- (S02) DAO `total()` uses `const { _sum: sum } = await ...aggregate({ _sum: { count: true } }); return sum.count ?? 0;` instead of `result._sum.count`, so the step's "one `_sum` match" grep check holds; same behavior.
 
 ## Checks pending for the user
 `needs-human` checks, collected from each step and verified by the user only after the run (section 4).
+- (S02) Empty table → total 0: with `npm run dev` on port 3333, back up the rows, run `DELETE FROM daily_visits;`, then `curl -i http://localhost:3333/visits/total` → 200, body `{"success":true,"message":"Visit total found","data":{"total":0}}` — pending
+- (S02) Sum 3 + 4 → 7: `INSERT INTO daily_visits (date, count) VALUES ('2026-11-01', 3), ('2026-11-02', 4);`, then the same curl → `data` is `{ "total": 7 }`; then `curl -s -X POST localhost:3333/visits` and GET again → `data.total` is 8. Restore the original rows afterwards (dev DB backup: `C:\Users\sgcas\AppData\Local\Temp\claude\8d60c90c44501847\5b3706dc-80eb-4dac-ac5c-e5bbc65a5c04\scratchpad\daily_visits_backup.json`; the 2026-11-11 row was 67, now 68 after an agent's POST) — pending
+- (S02) DB down → 500: stop the DB (or point `DATABASE_URL` at an unreachable host), `curl -i http://localhost:3333/visits/total` → 500 with `success: false`, and the server keeps running — pending
