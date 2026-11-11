@@ -37,4 +37,18 @@ export class VisitDAO_Prisma
 
         return sum.count ?? 0;
     }
+
+    /**
+     * Returns up to `last` day rows, newest date first. Days without a row are not included.
+     * @param last positive safe integer (precondition; the caller clamps it).
+     */
+    async listLatest(last: number) : Promise<DailyVisit[]>
+    {
+        const rows = await repository.dailyVisit.findMany({
+            orderBy: { date: 'desc' },
+            take: last,
+        });
+
+        return rows.map(toDailyVisit);
+    }
 }

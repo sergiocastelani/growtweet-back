@@ -161,6 +161,43 @@
 						}
 					}
 				}
+			},
+			"get": {
+				"description": "List the visit counts of the most recent UTC days that have visits, newest first. Days without visits are not included.",
+				"tags": ["Visits"],
+				"security": [],
+				"parameters": [
+					{
+						"name": "last",
+						"in": "query",
+						"required": false,
+						"description": "Maximum number of days to return. Defaults to 10; a missing or non-integer value is treated as 10. Values below 1 become 1 and values above 2147483647 become 2147483647. Never causes a 400.",
+						"schema": { "type": "integer", "default": 10, "example": 10 }
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "The most recent day rows, newest first (an empty array when there are none)",
+						"content": {
+							"application/json": {
+								"schema": {
+									"allOf": [
+										{"$ref": "#/components/schemas/defaultResponse"},
+										{ "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/DailyVisit" } } } }
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Unknown server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/defaultResponse" }
+							}
+						}
+					}
+				}
 			}
 		},
 		"/visits/total": {
