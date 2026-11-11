@@ -8,3 +8,7 @@ export default visit_controller;
 visit_controller.post('/visits', (req, res) => {
     processAndRespond(res, async () => await (new VisitService()).register());
 })
+
+visit_controller.get('/visits/total', (req, res) => {
+    processAndRespond(res, async () => await (new VisitService()).total());
+})

@@ -5,7 +5,7 @@
 | Step | File | Status | Rounds | Checkpoint | Notes |
 |------|------|--------|--------|-----------|-------|
 | S01 | [step-01.md](step-01.md) | done | 1 | 79359de | passed first review; concurrency check needs `connection_limit` in DATABASE_URL on Aiven dev DB |
-| S02 | [step-02.md](step-02.md) | pending | 0 | - | - |
+| S02 | [step-02.md](step-02.md) | in-progress | 0 | - | - |
 | S03 | [step-03.md](step-03.md) | pending | 0 | - | - |
 | S04 | [step-04.md](step-04.md) | pending | 0 | - | - |
 | S05 | [step-05.md](step-05.md) | pending | 0 | - | - |

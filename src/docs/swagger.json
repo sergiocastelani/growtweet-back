@@ -162,6 +162,46 @@
 					}
 				}
 			}
+		},
+		"/visits/total": {
+			"get": {
+				"description": "Return the all-time number of visits (sum of the counts of every UTC day). Returns 0 when nothing was counted yet.",
+				"tags": ["Visits"],
+				"security": [],
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "The all-time visit total",
+						"content": {
+							"application/json": {
+								"schema": {
+									"allOf": [
+										{"$ref": "#/components/schemas/defaultResponse"},
+										{
+											"properties": {
+												"data": {
+													"type": "object",
+													"properties": {
+														"total": { "description": "All-time number of visits", "type": "integer", "example": 7 }
+													}
+												}
+											}
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Unknown server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/defaultResponse" }
+							}
+						}
+					}
+				}
+			}
 		}
 	},
 	"components": {

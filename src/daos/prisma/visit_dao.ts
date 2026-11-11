@@ -26,4 +26,15 @@ export class VisitDAO_Prisma
 
         return toDailyVisit(row);
     }
+
+    /**
+     * Sum of `count` over all rows of `daily_visits`.
+     * @returns the all-time number of visits; 0 when the table is empty.
+     */
+    async total() : Promise<number>
+    {
+        const { _sum: sum } = await repository.dailyVisit.aggregate({ _sum: { count: true } });
+
+        return sum.count ?? 0;
+    }
 }

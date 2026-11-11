@@ -17,4 +17,12 @@ export class VisitService
 
         return SuccessResult("Visit registered", visit, 201);
     }
+
+    /** All-time number of visits. Resolves with 200 and `{ total }`. */
+    public async total() : ServiceResponseAsync<{ total: number }>
+    {
+        const total = await visitDAO.total();
+
+        return SuccessResult("Visit total found", { total });
+    }
 }
