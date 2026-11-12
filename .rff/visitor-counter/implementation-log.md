@@ -8,7 +8,7 @@
 | S02 | [step-02.md](step-02.md) | done | 1 | f4b963a | passed first review; 3 live-DB checks deferred to user |
 | S03 | [step-03.md](step-03.md) | done | 1 | b7f2de2 | passed first review; seeded/empty-table live-DB checks deferred to user |
 | S04 | [step-04.md](step-04.md) | done | 1 | growtweet-front 6c35f5e | passed first review; real-form login check deferred to user |
-| S05 | [step-05.md](step-05.md) | pending | 0 | - | - |
+| S05 | [step-05.md](step-05.md) | done | 1 | growtweet-front staged | passed first review; all checks agent-verified (none deferred) |
 
 Status: pending | in-progress | done | skipped | blocked
 
@@ -18,6 +18,7 @@ Deviations from a step file's implementation suggestions, as reported by its imp
 - (S02) DAO `total()` uses `const { _sum: sum } = await ...aggregate({ _sum: { count: true } }); return sum.count ?? 0;` instead of `result._sum.count`, so the step's "one `_sum` match" grep check holds; same behavior.
 - (S03) None in code; new `GET /visits` route placed after S02's `GET /visits/total` (exact paths, order irrelevant).
 - (S04) None in code; the skeleton's inline comments in `App.tsx` were left out. DevTools request blocking/throttling were simulated by patching XHR in the page.
+- (S05) None.
 
 ## Checks pending for the user
 `needs-human` checks, collected from each step and verified by the user only after the run (section 4).
