@@ -131,6 +131,114 @@
 					}
 				}
 			}
+		},
+		"/visits": {
+			"post": {
+				"description": "Count one visit for the current UTC day (server clock). Creates the day row with count 1 if it does not exist.",
+				"tags": ["Visits"],
+				"security": [],
+				"parameters": [],
+				"responses": {
+					"201": {
+						"description": "The visit was counted; returns the day row after the increment",
+						"content": {
+							"application/json": {
+								"schema": {
+									"allOf": [
+										{"$ref": "#/components/schemas/defaultResponse"},
+										{ "properties": { "data": { "$ref": "#/components/schemas/DailyVisit" } } }
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Unknown server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/defaultResponse" }
+							}
+						}
+					}
+				}
+			},
+			"get": {
+				"description": "List the visit counts of the most recent UTC days that have visits, newest first. Days without visits are not included.",
+				"tags": ["Visits"],
+				"security": [],
+				"parameters": [
+					{
+						"name": "last",
+						"in": "query",
+						"required": false,
+						"description": "Maximum number of days to return. Defaults to 10; a missing or non-integer value is treated as 10. Values below 1 become 1 and values above 2147483647 become 2147483647. Never causes a 400.",
+						"schema": { "type": "integer", "default": 10, "example": 10 }
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "The most recent day rows, newest first (an empty array when there are none)",
+						"content": {
+							"application/json": {
+								"schema": {
+									"allOf": [
+										{"$ref": "#/components/schemas/defaultResponse"},
+										{ "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/DailyVisit" } } } }
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Unknown server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/defaultResponse" }
+							}
+						}
+					}
+				}
+			}
+		},
+		"/visits/total": {
+			"get": {
+				"description": "Return the all-time number of visits (sum of the counts of every UTC day). Returns 0 when nothing was counted yet.",
+				"tags": ["Visits"],
+				"security": [],
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "The all-time visit total",
+						"content": {
+							"application/json": {
+								"schema": {
+									"allOf": [
+										{"$ref": "#/components/schemas/defaultResponse"},
+										{
+											"properties": {
+												"data": {
+													"type": "object",
+													"properties": {
+														"total": { "description": "All-time number of visits", "type": "integer", "example": 7 }
+													}
+												}
+											}
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Unknown server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/defaultResponse" }
+							}
+						}
+					}
+				}
+			}
 		}
 	},
 	"components": {
@@ -167,6 +275,14 @@
 						"nullable": true
 					}
 				}
+			},
+			"DailyVisit": {
+				"description": "Visit count of one UTC day",
+				"type": "object",
+				"properties": {
+					"date": { "description": "UTC calendar day (YYYY-MM-DD)", "type": "string", "format": "date", "example": "2026-11-11" },
+					"count": { "description": "Number of visits counted that day", "type": "integer", "example": 1 }
+				}
 			}
 		},
 		"securitySchemes": {
@@ -185,6 +301,10 @@
 		{
 			"name": "Likes",
 			"description": "Endpoints related to Like"
+		},
+		{
+			"name": "Visits",
+			"description": "Endpoints related to the visitor counter"
 		}
 	],
 	"security": [

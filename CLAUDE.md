@@ -45,3 +45,4 @@ Tests live in `tests/` (Jest `roots`), not alongside source.
 - **Service tests** (`tests/services/`) mock the DAO layer: `jest.mock('../../src/daos/_setup')` and cast e.g. `tweetDAO as jest.Mocked<typeof tweetDAO>`.
 - **API tests** (`tests/api/`) use supertest against `createApp()` and stub DB calls through `prismaMock` (e.g. `prismaMock.user.findUnique.mockResolvedValue(...)`).
 - Coverage excludes `src/daos`.
+- **Manual/browser checks** that need a logged-in user must use the test user `test@nowhere.com`, password `1234` (dev DB). Do not log in as any other account.

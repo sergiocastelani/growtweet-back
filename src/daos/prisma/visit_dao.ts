@@ -1,0 +1,54 @@
+import { DailyVisit } from "../../models/daily_visit";
+import repository from "./_setup";
+
+/** Maps a Prisma `daily_visits` row to the public model; the date becomes UTC "YYYY-MM-DD". */
+export function toDailyVisit(row: { date: Date; count: number }) : DailyVisit
+{
+    return new DailyVisit(row.date.toISOString().slice(0, 10), row.count);
+}
+
+export class VisitDAO_Prisma
+{
+    /**
+     * Atomically adds 1 to the row of `date`, creating it with count 1 if missing.
+     * @param date UTC midnight of the day to count (precondition; not re-normalized here).
+     * @returns the row after the increment.
+     */
+    async increment(date: Date) : Promise<DailyVisit>
+    {
+        // Keep this a plain upsert (no select / nested writes / extra where fields)
+        // so Prisma runs it as a single atomic INSERT ... ON CONFLICT DO UPDATE.
+        const row = await repository.dailyVisit.upsert({
+            where: { date },
+            create: { date, count: 1 },
+            update: { count: { increment: 1 } },
+        });
+
+        return toDailyVisit(row);
+    }
+
+    /**
+     * Sum of `count` over all rows of `daily_visits`.
+     * @returns the all-time number of visits; 0 when the table is empty.
+     */
+    async total() : Promise<number>
+    {
+        const { _sum: sum } = await repository.dailyVisit.aggregate({ _sum: { count: true } });
+
+        return sum.count ?? 0;
+    }
+
+    /**
+     * Returns up to `last` day rows, newest date first. Days without a row are not included.
+     * @param last positive safe integer (precondition; the caller clamps it).
+     */
+    async listLatest(last: number) : Promise<DailyVisit[]>
+    {
+        const rows = await repository.dailyVisit.findMany({
+            orderBy: { date: 'desc' },
+            take: last,
+        });
+
+        return rows.map(toDailyVisit);
+    }
+}

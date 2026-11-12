@@ -44,3 +44,10 @@ model Like {
 
   @@id(name: "id", [tweetId, userId])
 }
+
+model DailyVisit {
+  date  DateTime @id @db.Date // UTC calendar day
+  count Int      @default(0)
+
+  @@map("daily_visits")
+}
