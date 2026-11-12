@@ -1,13 +1,13 @@
 # Implementation Log
 
-- **Updated:** 2026-11-11
+- **Updated:** 2026-11-12
 
 | Step | File | Status | Rounds | Checkpoint | Notes |
 |------|------|--------|--------|-----------|-------|
 | S01 | [step-01.md](step-01.md) | done | 1 | 79359de | passed first review; concurrency check needs `connection_limit` in DATABASE_URL on Aiven dev DB |
 | S02 | [step-02.md](step-02.md) | done | 1 | f4b963a | passed first review; 3 live-DB checks deferred to user |
 | S03 | [step-03.md](step-03.md) | done | 1 | b7f2de2 | passed first review; seeded/empty-table live-DB checks deferred to user |
-| S04 | [step-04.md](step-04.md) | pending | 0 | - | - |
+| S04 | [step-04.md](step-04.md) | done | 1 | growtweet-front 6c35f5e | passed first review; real-form login check deferred to user |
 | S05 | [step-05.md](step-05.md) | pending | 0 | - | - |
 
 Status: pending | in-progress | done | skipped | blocked
@@ -17,6 +17,7 @@ Deviations from a step file's implementation suggestions, as reported by its imp
 - (S01) None in design. Added a comment in `VisitDAO_Prisma.increment` that the upsert must stay plain; `migration.sql` kept with LF as Prisma generated it.
 - (S02) DAO `total()` uses `const { _sum: sum } = await ...aggregate({ _sum: { count: true } }); return sum.count ?? 0;` instead of `result._sum.count`, so the step's "one `_sum` match" grep check holds; same behavior.
 - (S03) None in code; new `GET /visits` route placed after S02's `GET /visits/total` (exact paths, order irrelevant).
+- (S04) None in code; the skeleton's inline comments in `App.tsx` were left out. DevTools request blocking/throttling were simulated by patching XHR in the page.
 
 ## Checks pending for the user
 `needs-human` checks, collected from each step and verified by the user only after the run (section 4).
@@ -25,3 +26,4 @@ Deviations from a step file's implementation suggestions, as reported by its imp
 - (S02) DB down → 500: stop the DB (or point `DATABASE_URL` at an unreachable host), `curl -i http://localhost:3333/visits/total` → 500 with `success: false`, and the server keeps running — pass
 - (S03) Seeded 15 days + `last` parsing: with `npm run dev` on port 3333, back up `daily_visits`, seed 15 consecutive days with the step-03 SQL seed, then `curl -s "localhost:3333/visits?last="<v>` for empty/no param (10 rows, newest first), `3` (3 rows), `0` and `-5` (1 row), `abc` and `2.5` (10 rows), `99999999999` (all 15), `last=5&last=7` (10 rows); every `date` is `YYYY-MM-DD` and descending. Restore the original rows afterwards — pass
 - (S03) Empty table → `[]`: with the rows backed up, `DELETE FROM daily_visits;`, then `curl -i localhost:3333/visits` → 200, body `{"success":true,"message":"Visits found","data":[]}`; restore the rows — pass
+- (S04) Login/logout keeps the window: in growtweet-front (`npm run dev`, backend on 3333), log out, then in DevTools run `localStorage.setItem('lastVisitAt', String(Date.now() - 10*60*1000))`; log in with the real form, then log out. Expected: no `POST /visits` in the Network tab for either action, and `lastVisitAt` unchanged after logout — pending
