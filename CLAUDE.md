@@ -9,7 +9,7 @@ Backend (Express + TypeScript + Prisma/PostgreSQL) for GrowTweet, a Twitter-like
 ## Commands
 
 - `npm run dev` — run with ts-node-dev (auto-restart)
-- `npm run build` — `tsc` to `dist/` **and** `prisma migrate deploy` (requires a reachable DB)
+- `npm run build` — `prisma generate`, `tsc` to `dist/` **and** `prisma migrate deploy` (requires a reachable DB)
 - `npm start` — run compiled output (`dist/src/index.js`; `src/` and `tests/` are both compiled, hence the nested path)
 - `npm test` — Jest, silent; `npm run test:verbose` for full output; `npm run test:coverage`
 - Single test file: `npx jest tests/services/tweet_service.test.ts`; single test: `npx jest -t "listPage"`
